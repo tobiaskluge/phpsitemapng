@@ -1,57 +1,27 @@
 <?php
-/* 
-	This is phpSitemapNG, a php script that creates your personal google sitemap
-	It can be downloaded from http://enarion.net/google/
-	License: GPL
-	
-	Tobias Kluge, enarion.net
-*/
+/**
+ * start file of phpSitemapNG
+ * 
+ * 
+ * This code is licensed under GPL. You can read about the license here:
+ * 		http://www.gnu.org/copyleft/gpl.html
+ * 
+ * More information about this are available at
+ * @link http://enarion.net/google/ homepage of phpSitemapNG
+ * 
+ * @author Tobias Kluge, enarion.it Internet-Service
+ * @version 1.0 from 2005-08-12
+ */
 
-require_once('inc/startup.php');
+require_once('classes/PhpSitemapNG.class.php');
 
-switch ($state) {
-	case PSNG_ACTION_SETTINGS_RESET:
-		viewSetup(TRUE);
-		break;
-			
-	case PSNG_ACTION_SETTINGS_SETUP:
-		resetRunon();
-		viewSetup();
-		break;
+// create an instance of phpSitemapNG
+$psng = new PhpSitemapNG();
 
-	case PSNG_ACTION_SETTINGS_GET: // & parse
-		getSettings();
-		
-	case PSNG_ACTION_SETTINGS_PARSE:
-		$FILE = parseFilesystem();
-		
-		// check for timeout
-		if ($SETTINGS[PSNG_TIMEOUT_ACTION] != '') break;
-		// if no timeout, print result or write it
-		if ($SETTINGS[PSNG_EDITRESULT] == PSNG_EDITRESULT_TRUE) {
-			displaySitemapEdit($FILE);
-		} else {
-			writeSitemap($FILE); 
-		}
-		break;
-		
-	case PSNG_ACTION_SETTINGS_WRITESITEMAP_USERINPUT:
-		writeSitemapUserinput();
-		break;
-	
-	case PSNG_ACTION_SETTINGS_PINGGOOGLE:
-		submitPageToGoogle();		
-		break;
-
-	case PSNG_ACTION_CHECK_UPDATESTATUS:
-		checkUpdateStatus();
-		break;
-	
-	default:
-		viewSetup();
-		break;
-}
-
-require_once(PSNG_FILE_INC_SHUTDOWN);
-
+$input = $_REQUEST;
+// TODO precompute and secure input from user!!!
+ 
+$psng->handleInput($input);
+// that's it, invoke tearDown to kill all objects :)
+$psng->tearDown();
 ?>

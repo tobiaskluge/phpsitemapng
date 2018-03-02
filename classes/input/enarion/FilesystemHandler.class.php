@@ -1,11 +1,18 @@
 <?php
-/* 
-	This is phpSitemapNG, a php script that creates your personal google sitemap
-	It can be downloaded from http://enarion.net/google/
-	License: GPL
-	
-	Tobias Kluge, enarion.net
-*/
+/**
+ * this is a filesystem handler that scans the filesystem for files
+ * that match the given restrictions
+ * 
+ * 
+ * This code is licensed under GPL. You can read about the license here:
+ * 		http://www.gnu.org/copyleft/gpl.html
+ * 
+ * More information about this are available at
+ * @link http://enarion.net/google/ homepage of phpSitemapNG
+ * 
+ * @author Tobias Kluge, enarion.it Internet-Service
+ * @version 1.1 from 2005-08-16
+ */
 
 class FilesystemHandler {
 	var $files = array();
@@ -19,6 +26,9 @@ class FilesystemHandler {
 	var $directory_offset = '';
 	var $cur_item = 0;
 	var $deadline;
+	var $numbOfResult;	
+	
+	var $storage;		// reference to storage delegate
 	 
 	/**
 	 * public constructor, set initial values
@@ -30,10 +40,23 @@ class FilesystemHandler {
     }    
     
     /**
+     * empty space, shut down this object
+     */
+    function tearDown() {
+    	// lazy, only unset big variables
+    	unset($this->files);
+    	$this->files = null;
+    	unset($this->done);
+    	$this->done = null;
+    	unset($this->todo);
+    	$this->todo = null;
+    }
+    
+    /**
      * returns number of files
      */
     function size() {
-    	return count($this->files);
+    	return (count($this->files)>0) ? count($this->files) : $this->numbOfResult;
     }
     
     /**
@@ -41,8 +64,8 @@ class FilesystemHandler {
      * behaves like in java
      */
     function hasNext() {
-    	if ($this->size() > $this->cur_item) return TRUE;
-    	return FALSE;
+    	if ($this->size() > $this->cur_item) return true;
+    	return false;
     }
     
     function hasFinished() {
@@ -59,7 +82,7 @@ class FilesystemHandler {
     		$this->cur_item++;
     		return $tmp;
     	}
-    	return NULL;
+    	return null;    		
     }
     
 	function getTodo() {
@@ -87,6 +110,10 @@ class FilesystemHandler {
 		$this->done = $done;
 	}
 		
+	function setStorage(& $storage) {
+		$this->storage = & $storage;
+	}
+	
     /**
      * set list of forbidden directories
      */
@@ -117,7 +144,7 @@ class FilesystemHandler {
 		reset($this->files);
 		ksort($this->files);
 		reset($this->files);
-    	return count($this->files);
+    	return $this->size();
     }
     
 	function microtime_float() {
@@ -129,9 +156,9 @@ class FilesystemHandler {
      * return last modification time
      */
     function getLastModificationTime($filename) {
-    	$lastmod = filemtime($filename);
-    	// if filemtime failed (for any reason), set it to current time
-		if (!((!is_null($lastmod)) && is_integer($lastmod) && $lastmod > 0)) $lastmod = time(); 
+    	$lastmod = @filemtime($filename);
+    	// if filemtime failed (for any reason), set to empty string (= unset)
+		if (!((!is_null($lastmod)) && is_integer($lastmod) && $lastmod > 0)) $lastmod = ''; 
     	
 		return $lastmod;
     	
@@ -152,7 +179,7 @@ class FilesystemHandler {
 	}
 
 	/**
-	 * only allowed masking char: * (before and/or after search string)
+	 * future: only allowed masking char: * (before and/or after search string)
 	 * 
 	 * TODO check this with more data
 	 */
@@ -171,10 +198,10 @@ class FilesystemHandler {
 					$pos = ($filename === $file);
 		  		}
 */		  		if ($pos === FALSE) continue;
-		  		return TRUE;
+		  		return true;
 	    	}
 	  	}
-	  	return FALSE;
+	  	return false;		
 	}
 
 	function checkDirectoryName($directory) {
@@ -194,10 +221,10 @@ class FilesystemHandler {
 		  		}
 		  		// echo "directory: $directory, dir: $dir, dir_search: $dir_search, pos: $pos<br>\n";
 */		  		if ($pos === FALSE) continue;
-		  		return TRUE;
+		  		return true;
 	    	}
 	  	}
-	  	return FALSE;
+	  	return false;		
 	}
 
 	/**
@@ -205,8 +232,8 @@ class FilesystemHandler {
 	 * algorithm: breadth first search (former algorithm: dfs)
 	 */
 	function _getFiles($directory) {
-	   	if($dir = opendir($directory)) {
-	       while(FALSE !== ($file = readdir($dir))) {
+	   	if($dir = opendir($directory)) {	
+	       while(false !== ($file = readdir($dir))) {
 	       		if ($file == '..' || $file == '.' || $file[0] == '.') continue;
 	       		
 	       		//TODO maybe adapt this to php running on windows 
@@ -223,11 +250,23 @@ class FilesystemHandler {
 					array_push($this->todo, $filename);
 				} else {  // is a file, add it to done list
 					if ($this->checkFileName($filename)) continue;
-			    	array_push($this->done, $filename);
+					if (isset($this->storage)) {
+						// store urlinfo into storage object
+						$this->storage->fire(array(
+								PSNG_URLINFO_URL => str_replace($this->filesystem_base, $this->directory_offset, $filename), 
+								PSNG_URLINFO_FILENAME => $filename,
+								PSNG_URLINFO_LASTMOD => $this->getLastModificationTime($filename),
+								PSNG_URLINFO_ENABLED => 1
+						));
+						$this->numbOfResult++;
+					} else {
+						// store url into result array (deprecated)
+			    		array_push($this->done, $filename);
+					}
 				}
 	       }
 	       closedir($dir);
-	       return TRUE;
+	       return true;
 	   }
 	}
     
