@@ -439,16 +439,18 @@ class Crawler {
 			}
 		}
 //		echo "Sending cookie_string: $cookie_string<br>\n";
-
+		$url_host_protocol = '';
 		if ($url_port == '') {
 			if ($url_scheme == 'https') {
 				$url_port = "443";
+				$url_host_protocol = 'ssl://';
 			} else {
 				$url_port = "80";
 			}
 		}
 		//		debug($url, 'Parsed URL');
-		$fp = fsockopen($url_host, $url_port, $errno, $errstr, $this->timeout);
+		$fp = fsockopen($url_host_protocol.$url_host, $url_port, $errno, $errstr, $this->timeout);
+		
 		if ($fp === FALSE) {
 			debug($errstr, 'Could not open connection for '.$urlString.' (host: '.$url_host.', port:'.$url_port.'), Errornumber: '.$errno);
 			return array('header' => array(), 'content' => '');
@@ -654,12 +656,12 @@ echo 'Crawler _absolute: '.'absolute link to '.$relative.'<br/>';
 				$relative = substr($relative, 1);
 				$dir = '/';
 			} else {
-				// Link fängt mit ./ an
+				// Link fÃ¤ngt mit ./ an
 				if (substr($relative, 0, 2) == './')
 				{
 					$relative = substr($relative, 2);
 				}
-				// Referenzen auf höher liegende Verzeichnisse auflösen
+				// Referenzen auf hÃ¶her liegende Verzeichnisse auflÃ¶sen
 				else
 				{
 					while (substr($relative, 0, 3) == '../') {
@@ -674,7 +676,7 @@ echo 'Crawler _absolute: '.'absolute link to '.$relative.'<br/>';
 echo 'Crawler _absolute: '.'new path '.$path.'<br/>';
 		}
 
-		// volle URL zurückgeben
+		// volle URL zurÃ¼ckgeben
 		// did not support all parts or a URL! - corrected mk/2005-11-13
 		$abs  = ('file' == $url['scheme']) ? $url['scheme'].':///' : $url['scheme'].'://';
 		$abs .= (isset($url['user'])) ? $abs .= $url['user'].( (isset($url['pass'])) ? ':'.$url['pass'] : '' ).'@' : '';
@@ -725,11 +727,11 @@ echo 'Crawler _absolute: '.'new path '.$path.'<br/>';
 			$url['host'] = $this->host;
 		}
 
-		// Link fängt mit ./ an
+		// Link fÃ¤ngt mit ./ an
 		if (substr($relative, 0, 2) == './')
 			$relative = substr($relative, 2);
 
-		// Referenzen auf höher liegende Verzeichnisse auflösen
+		// Referenzen auf hÃ¶her liegende Verzeichnisse auflÃ¶sen
 		else
 			while (substr($relative, 0, 3) == '../') {
 				$relative = substr($relative, 3);
@@ -741,7 +743,7 @@ echo 'Crawler _absolute: '.'new path '.$path.'<br/>';
 			return $this->base . urldecode($relative);
 		}
 
-		// volle URL zurückgeben
+		// volle URL zurÃ¼ckgeben
 		return sprintf('%s://%s%s/%s', $url['scheme'], $url['host'], $dir, urldecode($relative));
 	}
 
