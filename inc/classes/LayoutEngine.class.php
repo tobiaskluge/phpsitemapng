@@ -22,11 +22,11 @@ class LayoutEngine {
 		$this->content[success] = array();
 		$this->content[text] = array();
     	$this->content[debug][] = array();
-*/    	$this->content['content_header'] = "";
-    	$this->content['content_footer'] = "";
+*/    	$this->content['content_header'] = array();
+    	$this->content['content_footer'] = array();
     	$this->content['title'] = "";
     	$this->content['charset'] = "";
-		$this->content['header'] = array();
+	$this->content['header'] = array();
     	$this->content['css'] = array();
     	$this->content['body'] = array();
     	$this->static_title = $staticTitle;
@@ -189,10 +189,8 @@ class LayoutEngine {
 		 
 		$res .= '<h1>'.$this->content['title'].'</h1>';
 		
-		if(($this->content['content_header'] != "") && count($this->content['content_header'])>0) {		
 	    	foreach ($this->content['content_header'] as $id =>  $line) {
 	    		$res .= $line . "\n";
-	    	}
 		}
     	return $res;
     }
@@ -217,28 +215,22 @@ class LayoutEngine {
 	    	}
 	    	$res .= '-->'."\n".'</style>'."\n";
 			
-			//end of head
-			$res .= '</head><body>'."\n";
-			 
-			$res .= '<h1>'.$this->content['title'].'</h1>';
-			
-			if(($this->content['content_header'] != "") && count($this->content['content_header'])>0) {		
-		    	foreach ($this->content['content_header'] as $id => $line) {
-		    		$res .= $line . "\n";
-		    	}
-			}
-			
-			if(($this->content['body'] != "") && count($this->content['body']) > 0) {		
-		    	foreach ($this->content['body'] as $id => $line) {
-		    		$res .= $line . "\n";
-		    	}
-			}
-			
-			if(($this->content['content_footer'] != "") && count($this->content['content_footer']) > 0) {		
-		    	foreach ($this->content['content_footer'] as $id => $line) {
-		    		$res .= '<div class="content_footer">'.$line.'</div>'. "\n";
-		    	}
-			}
+		//end of head
+		$res .= '</head><body>'."\n";
+
+		$res .= '<h1>'.$this->content['title'].'</h1>';
+
+		foreach ($this->content['content_header'] as $id => $line) {
+			$res .= $line . "\n";
+		}
+
+		foreach ($this->content['body'] as $id => $line) {
+			$res .= $line . "\n";
+		}
+
+		foreach ($this->content['content_footer'] as $id => $line) {
+			$res .= '<div class="content_footer">'.$line.'</div>'. "\n";
+		}
 	    	
 	    	$res .= "</body>";
 	    	$res .= "</html>";
@@ -248,4 +240,3 @@ class LayoutEngine {
     	return $res;
     }    
 }
-?>
